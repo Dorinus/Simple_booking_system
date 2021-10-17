@@ -1,0 +1,95 @@
+@page "/NewBooking"
+@using Simple_booking_system.Models
+@using Simple_booking_system.Data
+@inject IBookingManager BookingManager
+
+
+@if (ShowConfirmation)
+{
+    <EditForm Model="@Booking" OnValidSubmit="@OnBookingConfirmation">
+        <div class="modal fade show d-block" id="exampleModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Booking @Resource.Name</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                                @onclick="() => CloseBookingModule()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <p> Resourse Name: @Resource.Name </p>
+                        <div class="form-group"> Date From : <InputDate @bind-Value="Booking.DateFrom"/> </div>
+                        <div class="form-group"> Date To : <InputDate @bind-Value="Booking.DateTo"/> </div>
+
+                        <div class="form-group"> Max Quantity: @Resource.Quantity </div>
+                        <div class="form-group"> Quantity: <InputNumber rows="4" @bind-Value="Booking.BookedQuantity"/> </div>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                                @onclick="() => CloseBookingModule()">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" @onclick="() => OnBookingConfirmation()">
+                            Book
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+
+@code {
+
+    public DateTime PresentDateTime { get; set; }
+
+    public bool ShowConfirmation { get; set; }
+
+    public Resource Resource { get; set; }
+
+    public Booking Booking { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        PresentDateTime = DateTime.Now;
+        Resource = new Resource();
+        Booking = new Booking();
+    }
+
+    public async Task Show(Resource resource)
+    {
+        ShowConfirmation = true;
+        Resource = resource;
+        Booking.ResourceId = Resource.Id;
+        StateHasChanged();
+    }
+
+
+    private async Task OnBookingConfirmation()
+    {
+        Booking returnedBooking = await BookingManager.NewBooking(Booking);
+
+        if (returnedBooking != null)
+        {
+            Console.WriteLine("EMAIL SENT TO admin@admin.com FOR CREATED BOOKING WITH ID " + returnedBooking.Id);
+            CloseBookingModule();
+        }
+        else
+        {
+            Console.WriteLine("Smth went wrong");
+        }
+    }
+
+
+    // Closes the Booking Module
+    private void CloseBookingModule()
+    {
+        ShowConfirmation = false;
+    }
+
+}

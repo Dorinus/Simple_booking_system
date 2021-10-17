@@ -1,0 +1,68 @@
+@page "/ResourcesList"
+@using Simple_booking_system.Models
+@using Simple_booking_system.Data
+@inject IResourcesManager ResourcesManager
+
+
+<h3>ResourcesList</h3>
+
+@if (ResourceList == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else if (!ResourceList.Any())
+{
+    <p>
+        <em>There are no resources currently</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Resource ID</th>
+            <th>Resource Name</th>
+            <th>Quantity</th>
+            <th>Book</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in  ResourceList)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Quantity</td>
+                <td>
+                    <button @onclick="@(() => ShowBookingBox(item))" class="btn btn-primary">
+                        Book
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<NewBooking @ref="BookingModal"></NewBooking>
+
+
+@code {
+    private IList<Resource> ResourceList;
+    public NewBooking BookingModal { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ResourceList = await ResourcesManager.GetResources();
+    }
+
+    private void ShowBookingBox(Resource resource)
+    {
+        BookingModal.Show(resource);
+    }
+
+}
